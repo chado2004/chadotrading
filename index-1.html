@@ -453,7 +453,7 @@ async function analyzeCharts(){
   document.getElementById('signal-container').innerHTML='<div class="loading"><div class="spinner"></div>Analyse IA en cours...</div>';
   document.getElementById('journal-btn').style.display='none';
   try{
-    const GEMINI_KEY='COLLE_TA_CLE_ICI';
+    const GEMINI_KEY='AIzaSyB4_qJ-e0jmtizM1gFZGOWeHGuR0wGSXkk';
     const prompt=`Tu es ChadoTrade — expert ICT/SMC/CRT/MSNR/OTE pour ${selectedInstr.name}.\nRÈGLES: BUY ou SELL uniquement. Qualité A+ ou A min. OTE 0.62-0.79 prioritaire. 0.236 secondaire si OB/FVG aligné. CHoCH=retournement. BOS=continuation. Min 6 confluences=A, 8=A+. Si pas confirmation M5: confirmed:false + prix exact prochain setup.\nRéponds UNIQUEMENT en JSON sans markdown:\n{"decision":"BUY","quality":"A+","confirmed":true,"entry":0,"sl":0,"tp1":0,"tp2":0,"tp3":0,"tp4":0,"rr":"1:3","fib_level":"0.705 OTE","confluences":[],"confluences_count":0,"bias_h4":"BULLISH","next_setup_price":null,"next_setup_conditions":[],"invalidation_price":0,"narrative":"2 phrases max"}`;
     const parts=[
       ...images.map(b64=>({inline_data:{mime_type:'image/jpeg',data:b64}})),
