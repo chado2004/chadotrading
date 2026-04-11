@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ChadoTrade — Deriv Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080c10;--bg2:#0d1318;--bg3:#121920;
+  --border:#1e2d3a;--accent:#00f5c4;--accent3:#7c5cfc;
+  --text:#e8f4f8;--text2:#7a9bb0;
+  --green:#00e676;--red:#ff3d57;--gold:#ffd600;
+  --mono:'Space Mono',monospace;--sans:'Syne',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden;}
+
+/* ─── LOGIN ─── */
+#loginScreen{
+  position:fixed;inset:0;background:var(--bg);z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;
+}
+.ll{font-size:32px;font-weight:800;letter-spacing:-1px;margin-bottom:4px;}
+.ll span{color:var(--accent);}
+.ls{font-family:var(--mono);font-size:10px;color:var(--text2);letter-spacing:3px;margin-bottom:32px;text-transform:uppercase;}
+.lcard{width:100%;max-width:380px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:22px;}
+.lcard h2{font-size:15px;font-weight:700;margin-bottom:6px;}
+.lcard p{font-size:11px;color:var(--text2);font-family:var(--mono);margin-bottom:16px;line-height:1.7;}
+.linput{
+  width:100%;background:var(--bg3);border:2px solid var(--border);
+  color:var(--text);padding:13px 14px;border-radius:10px;
+  font-family:var(--mono);font-size:13px;margin-bottom:12px;
+  -webkit-appearance:none;outline:none;transition:.2s;
+}
+.linput:focus{border-color:var(--accent);}
+.lbtn{
+  width:100%;padding:15px;border-radius:10px;background:var(--accent);
+  color:#000;font-weight:800;font-size:15px;border:none;cursor:pointer;
+  font-family:var(--sans);letter-spacing:.5px;margin-bottom:10px;
+  -webkit-appearance:none;transition:opacity .2s;
+}
+.lbtn:active{opacity:.7;}
+.lhint{padding:12px;background:var(--bg3);border-radius:8px;font-size:10px;color:var(--text2);font-family:var(--mono);line-height:1.8;margin-bottom:10px;}
+.lhint a{color:var(--accent);}
+.lskip{
+  width:100%;padding:11px;border-radius:8px;background:transparent;
+  border:1px solid var(--border);color:var(--text2);font-size:12px;
+  cursor:pointer;font-family:var(--mono);-webkit-appearance:none;
+}
+.lerr{color:var(--red);font-family:var(--mono);font-size:11px;text-align:center;margin-bottom:8px;min-height:16px;}
+
+/* ─── APP ─── */
+#mainApp{display:none;}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg2);position:sticky;top:0;z-index:100;}
+.logo{font-weight:800;font-size:18px;letter-spacing:-.5px;}
+.logo span{color:var(--accent);}
+.hright{display:flex;align-items:center;gap:8px;}
+.conn{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;color:var(--text2);}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--red);transition:.4s;}
+.dot.on{background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.tbtn{font-size:10px;font-family:var(--mono);color:var(--text2);background:transparent;border:1px solid var(--border);padding:5px 9px;border-radius:6px;cursor:pointer;}
+
+.abar{display:flex;gap:8px;padding:10px 16px;overflow-x:auto;background:var(--bg2);border-bottom:1px solid var(--border);scrollbar-width:none;}
+.abar::-webkit-scrollbar{display:none;}
+.ac{flex-shrink:0;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;min-width:115px;}
+.al{font-size:9px;color:var(--text2);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;}
+.av{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--accent);margin-top:2px;}
+.av.m{color:var(--text2);font-size:11px;}
+
+.tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg2);overflow-x:auto;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{flex:1;min-width:54px;padding:11px 4px;text-align:center;font-size:10px;font-weight:600;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:.2s;text-transform:uppercase;white-space:nowrap;}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* WATCHLIST */
+.wp{padding:12px 16px;}
+.st{font-size:10px;font-family:var(--mono);color:var(--text2);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;}
+.sg{display:flex;flex-direction:column;gap:6px;}
+.sc{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:border-color .2s;animation:fi .4s ease both;}
+.sc:active{background:var(--bg2);}
+.sc.sel{border-color:var(--accent);background:#0a1f1a;}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.sn{font-weight:700;font-size:13px;}
+.stp{font-size:9px;color:var(--text2);font-family:var(--mono);}
+.sp{font-family:var(--mono);font-size:15px;font-weight:700;}
+.sp.up{color:var(--green);}
+.sp.dn{color:var(--red);}
+.sch{font-family:var(--mono);font-size:10px;margin-top:2px;color:var(--text2);}
+.sch.up{color:var(--green);}
+.sch.dn{color:var(--red);}
+
+/* CHART */
+.cp{padding:12px 16px;}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.csym{font-weight:800;font-size:16px;}
+.cpr{font-family:var(--mono);font-size:18px;color:var(--accent);font-weight:700;}
+.tfs{display:flex;gap:4px;margin-bottom:10px;}
+.tfb{padding:5px 10px;border-radius:5px;font-size:10px;font-family:var(--mono);border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:.2s;}
+.tfb.active{background:var(--accent);color:#000;font-weight:700;}
+#cv{width:100%;height:220px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;display:block;}
+
+/* SIGNALS */
+.sigp{padding:12px 16px;}
+.rbtn{width:100%;padding:13px;border-radius:10px;background:linear-gradient(135deg,var(--accent3),#4c2cec);color:#fff;font-weight:800;font-size:13px;border:none;cursor:pointer;font-family:var(--sans);margin-bottom:12px;letter-spacing:.5px;}
+.rbtn:disabled{opacity:.4;cursor:not-allowed;}
+.sff{display:flex;gap:5px;margin-bottom:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+.sff::-webkit-scrollbar{display:none;}
+.sfb{flex-shrink:0;padding:5px 12px;border-radius:20px;font-size:10px;font-family:var(--mono);border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;}
+.sfb.active{background:var(--accent3);color:#fff;border-color:var(--accent3);}
+.sgi{font-family:var(--mono);font-size:10px;color:var(--text2);text-align:center;margin-bottom:10px;}
+.sigc{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;position:relative;overflow:hidden;animation:fi .4s ease both;}
+.sigc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;}
+.sigc.buy::before{background:var(--green);}
+.sigc.sell::before{background:var(--red);}
+.sigh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.sigsym{font-weight:700;font-size:14px;}
+.sigbadge{font-size:9px;font-family:var(--mono);padding:3px 8px;border-radius:4px;font-weight:700;letter-spacing:1px;}
+.sigbadge.buy{background:#0a2e1a;color:var(--green);border:1px solid var(--green);}
+.sigbadge.sell{background:#2e0a0a;color:var(--red);border:1px solid var(--red);}
+.sigr{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--text2);margin-bottom:3px;}
+.sigr .v{color:var(--text);}
+.sigr .vg{color:var(--green);}
+.sigr .vr{color:var(--red);}
+.sigr .vc{color:var(--accent);}
+.sigsc{display:flex;align-items:center;gap:8px;margin:8px 0;}
+.sbar{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
+.sfill{height:100%;border-radius:3px;transition:width .6s;}
+.snum{font-family:var(--mono);font-size:10px;font-weight:700;}
+.ctags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+.ctag{font-size:9px;font-family:var(--mono);padding:2px 7px;border-radius:4px;background:var(--bg2);border:1px solid var(--accent3);color:var(--accent3);}
+.sigft{display:flex;justify-content:space-between;align-items:center;margin-top:8px;}
+.sigt{font-family:var(--mono);font-size:9px;color:var(--text2);}
+.tdbtn{padding:8px 14px;border-radius:7px;font-size:11px;font-weight:700;border:none;cursor:pointer;font-family:var(--sans);}
+.tdbtn.buy{background:var(--green);color:#000;}
+.tdbtn.sell{background:var(--red);color:#fff;}
+
+/* ORDER */
+.op{padding:12px 16px;}
+.ocard{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;}
+.gbn{background:var(--bg3);border:1px solid var(--gold);border-radius:10px;padding:12px;margin-bottom:14px;font-family:var(--mono);font-size:11px;color:var(--gold);text-align:center;}
+select.if,input.if{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:11px 12px;border-radius:8px;font-family:var(--mono);font-size:12px;-webkit-appearance:none;outline:none;transition:.2s;}
+select.if{margin-bottom:12px;}
+input.if:focus{border-color:var(--accent);}
+.ig{margin-bottom:12px;}
+.il{font-size:10px;color:var(--text2);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;display:block;}
+.stog{display:flex;gap:6px;margin-bottom:14px;}
+.stogb{flex:1;padding:10px;border-radius:8px;font-weight:700;font-size:13px;border:none;cursor:pointer;transition:.2s;}
+.stogb.buy{background:#0a2e1a;color:var(--green);border:1px solid var(--green);}
+.stogb.buy.active{background:var(--green);color:#000;}
+.stogb.sell{background:#2e0a0a;color:var(--red);border:1px solid var(--red);}
+.stogb.sell.active{background:var(--red);color:#fff;}
+.exbtn{width:100%;padding:14px;border-radius:10px;font-weight:800;font-size:14px;border:none;cursor:pointer;font-family:var(--sans);letter-spacing:1px;text-transform:uppercase;}
+.exbtn.buy{background:var(--green);color:#000;}
+.exbtn.sell{background:var(--red);color:#fff;}
+
+/* POSITIONS */
+.pp{padding:12px 16px;}
+.posc{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;}
+.posh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.possym{font-weight:700;font-size:13px;}
+.possd{font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:4px;font-weight:700;}
+.possd.buy{background:#0a2e1a;color:var(--green);}
+.possd.sell{background:#2e0a0a;color:var(--red);}
+.posdt{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--text2);}
+.pospnl{font-family:var(--mono);font-size:13px;font-weight:700;text-align:right;margin-top:4px;}
+.pospnl.p{color:var(--green);}
+.pospnl.l{color:var(--red);}
+.cbtn{width:100%;margin-top:8px;padding:7px;border-radius:6px;background:transparent;border:1px solid var(--border);color:var(--text2);font-size:11px;cursor:pointer;font-family:var(--mono);transition:.2s;}
+.cbtn:active{border-color:var(--red);color:var(--red);}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--bg2);border:1px solid var(--accent);border-radius:10px;padding:12px 20px;font-family:var(--mono);font-size:12px;transition:.35s cubic-bezier(.34,1.56,.64,1);z-index:9999;white-space:nowrap;box-shadow:0 4px 24px rgba(0,245,196,.2);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.err{border-color:var(--red);}
+.ld{text-align:center;padding:36px 0;color:var(--text2);font-family:var(--mono);font-size:12px;}
+.spin{width:26px;height:26px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.emp{text-align:center;padding:32px 0;color:var(--text2);font-size:12px;font-family:var(--mono);}
+.div{height:1px;background:var(--border);margin:12px 0;}
+</style>
+</head>
+<body>
+
+<!-- ═══ ÉCRAN DE CONNEXION ═══ -->
+<div id="loginScreen">
+  <div class="ll">Chado<span>Trade</span></div>
+  <div class="ls">Deriv Pro Platform</div>
+  <div class="lcard">
+    <h2>🔐 Token API Deriv</h2>
+    <p>Entre ton token pour accéder au solde,<br>signaux et passer des ordres en direct.</p>
+    <div class="lerr" id="lerr"></div>
+    <input type="password" class="linput" id="tinput"
+      placeholder="Token API (ex: a1-xxxxxxxx...)"
+      autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <button class="lbtn" id="lbtn" onclick="doLogin()">⚡ Se connecter</button>
+    <div class="lhint">
+      📌 Obtenir ton token :<br>
+      <a href="https://app.deriv.com/account/api-token" target="_blank">app.deriv.com → API Token</a><br>
+      Coche <b>Read + Trade</b> puis clique <b>Create</b><br>
+      <span style="color:#ff6b35">⚠️ Ne partage jamais ce token</span>
+    </div>
+    <button class="lskip" onclick="skipLogin()">Continuer sans token (prix temps réel uniquement)</button>
+  </div>
+</div>
+
+<!-- ═══ APP PRINCIPALE ═══ -->
+<div id="mainApp">
+  <header>
+    <div class="logo">Chado<span>Trade</span></div>
+    <div class="hright">
+      <div class="conn"><div class="dot" id="dot"></div><span id="ctext">--</span></div>
+      <button class="tbtn" onclick="doLogout()">⎋ Token</button>
+    </div>
+  </header>
+
+  <div class="abar">
+    <div class="ac"><div class="al">Solde</div><div class="av" id="Xbal">--</div></div>
+    <div class="ac"><div class="al">P&L</div><div class="av" id="Xpnl">--</div></div>
+    <div class="ac"><div class="al">Devise</div><div class="av" id="Xcur">--</div></div>
+    <div class="ac"><div class="al">Compte</div><div class="av" id="Xlid" style="font-size:10px">--</div></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" id="t0" onclick="sw(0,'watch')">📈 Marché</div>
+    <div class="tab" id="t1" onclick="sw(1,'chart')">🕯 Chart</div>
+    <div class="tab" id="t2" onclick="sw(2,'signals')">⚡ Signaux</div>
+    <div class="tab" id="t3" onclick="sw(3,'order')">🛒 Ordre</div>
+    <div class="tab" id="t4" onclick="sw(4,'positions')">💼 Positions</div>
+  </div>
+
+  <!-- MARCHÉ -->
+  <div class="panel active" id="panel-watch">
+    <div class="wp">
+      <div class="st">Forex Majeurs</div>
+      <div class="sg" id="fg"><div class="ld"><div class="spin"></div>Connexion Deriv...</div></div>
+      <div class="div"></div>
+      <div class="st">Synthetic Indices</div>
+      <div class="sg" id="sg"><div class="ld"><div class="spin"></div>Connexion Deriv...</div></div>
+    </div>
+  </div>
+
+  <!-- CHART -->
+  <div class="panel" id="panel-chart">
+    <div class="cp">
+      <div class="ch">
+        <div>
+          <div class="csym" id="Xcsym">Sélectionne un symbole</div>
+          <div style="font-size:10px;color:var(--text2);font-family:var(--mono)" id="Xcba"></div>
+        </div>
+        <div class="cpr" id="Xcpr">--</div>
+      </div>
+      <div class="tfs">
+        <button class="tfb active" onclick="chTF(this,'60')">M1</button>
+        <button class="tfb" onclick="chTF(this,'300')">M5</button>
+        <button class="tfb" onclick="chTF(this,'900')">M15</button>
+        <button class="tfb" onclick="chTF(this,'3600')">H1</button>
+        <button class="tfb" onclick="chTF(this,'14400')">H4</button>
+      </div>
+      <canvas id="cv"></canvas>
+      <div style="margin-top:8px;text-align:center;font-family:var(--mono);font-size:10px;color:var(--text2)">
+        ▲ <span style="color:var(--green)">Haussier</span> &nbsp; ▼ <span style="color:var(--red)">Baissier</span> &nbsp; — <span style="color:var(--accent)">Prix actuel</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIGNAUX -->
+  <div class="panel" id="panel-signals">
+    <div class="sigp">
+      <button class="rbtn" id="rbtn" onclick="genSig()">⚡ Analyser les marchés (ICT/SMC)</button>
+      <div class="sff">
+        <button class="sfb active" onclick="fSig('all',this)">Tous</button>
+        <button class="sfb" onclick="fSig('buy',this)">▲ BUY</button>
+        <button class="sfb" onclick="fSig('sell',this)">▼ SELL</button>
+        <button class="sfb" onclick="fSig('forex',this)">Forex</button>
+        <button class="sfb" onclick="fSig('synth',this)">Synthetic</button>
+        <button class="sfb" onclick="fSig('aplus',this)">A+</button>
+      </div>
+      <div class="sgi" id="sgi">Lance l'analyse pour générer des signaux ICT/SMC</div>
+      <div id="sgl"><div class="emp">Aucun signal — clique sur Analyser</div></div>
+    </div>
+  </div>
+
+  <!-- ORDRE -->
+  <div class="panel" id="panel-order">
+    <div class="op">
+      <div class="gbn" id="gbn" style="display:none">
+        ⚠️ Mode invité — <span style="cursor:pointer;color:var(--accent);text-decoration:underline" onclick="doLogout()">Connecte-toi</span> pour passer des ordres
+      </div>
+      <div class="ocard">
+        <div class="st" style="margin-bottom:12px">Passer un ordre</div>
+        <select class="if" id="osym"></select>
+        <div style="display:flex;justify-content:space-between;margin-bottom:12px;font-family:var(--mono);font-size:11px;">
+          <span style="color:var(--text2)">Ask:<span id="Xoask" style="color:var(--green)"> --</span></span>
+          <span style="color:var(--text2)">Bid:<span id="Xobid" style="color:var(--red)"> --</span></span>
+          <span style="color:var(--text2)">Spread:<span id="Xosp" style="color:var(--accent)"> --</span></span>
+        </div>
+        <div class="stog">
+          <button class="stogb buy active" id="bBuy" onclick="setSide('buy')">▲ BUY</button>
+          <button class="stogb sell" id="bSell" onclick="setSide('sell')">▼ SELL</button>
+        </div>
+        <div class="ig"><label class="il">Montant ($)</label><input type="number" class="if" id="oamt" value="10" min="1"></div>
+        <div class="ig"><label class="il">Durée (minutes)</label><input type="number" class="if" id="odur" value="5" min="1" max="1440"></div>
+        <button class="exbtn buy" id="exbtn" onclick="execOrd()">⚡ Exécuter BUY</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POSITIONS -->
+  <div class="panel" id="panel-positions">
+    <div class="pp">
+      <div class="st">Positions Ouvertes</div>
+      <div id="posL"><div class="emp">Aucune position ouverte</div></div>
+      <div class="div"></div>
+      <div class="st">Historique</div>
+      <div id="histL"><div class="emp">Aucun historique</div></div>
+    </div>
+  </div>
+</div><!-- /mainApp -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════
+//  ÉTAT GLOBAL
+// ════════════════════════════════════
+const APP_ID = '1089';
+let ws = null;
+let userToken = null;
+let authDone = false;
+let isGuest = false;
+let wsReady = false;
+let reconnectTimer = null;
+
+let prices = {};
+let candles = [];
+let selSym = null;
+let curTF = '60';
+let oSide = 'buy';
+let contracts = {};
+let allSigs = [];
+let sigFilter = 'all';
+let reqN = 1;
+let acInfo = {};
+
+const FOREX = [
+  {sym:'frxEURUSD',name:'EUR/USD',type:'Forex'},
+  {sym:'frxGBPUSD',name:'GBP/USD',type:'Forex'},
+  {sym:'frxUSDJPY',name:'USD/JPY',type:'Forex'},
+  {sym:'frxUSDCHF',name:'USD/CHF',type:'Forex'},
+  {sym:'frxAUDUSD',name:'AUD/USD',type:'Forex'},
+  {sym:'frxEURJPY',name:'EUR/JPY',type:'Forex'},
+  {sym:'frxGBPJPY',name:'GBP/JPY',type:'Forex'},
+];
+const SYNTH = [
+  {sym:'R_100',name:'Volatility 100',type:'Synthetic'},
+  {sym:'R_75', name:'Volatility 75', type:'Synthetic'},
+  {sym:'R_50', name:'Volatility 50', type:'Synthetic'},
+  {sym:'R_25', name:'Volatility 25', type:'Synthetic'},
+  {sym:'R_10', name:'Volatility 10', type:'Synthetic'},
+  {sym:'stpRNG',name:'Step Index',  type:'Synthetic'},
+];
+const ALL = [...FOREX, ...SYNTH];
+
+// ════════════════════════════════════
+//  LOGIN
+// ════════════════════════════════════
+window.onload = function() {
+  const saved = localStorage.getItem('cdt_token');
+  if (saved) document.getElementById('tinput').value = saved;
+};
+
+function doLogin() {
+  const t = document.getElementById('tinput').value.trim();
+  document.getElementById('lerr').textContent = '';
+  if (!t || t.length < 8) {
+    document.getElementById('lerr').textContent = '⚠️ Token trop court ou invalide';
+    return;
+  }
+  userToken = t;
+  isGuest = false;
+  localStorage.setItem('cdt_token', t);
+  document.getElementById('lbtn').textContent = '⏳ Connexion...';
+  document.getElementById('lbtn').disabled = true;
+  // Timeout de sécurité : si pas de réponse après 12s, réactiver le bouton
+  setTimeout(() => {
+    if (!authDone && document.getElementById('loginScreen').style.display !== 'none') {
+      document.getElementById('lbtn').textContent = '⚡ Se connecter';
+      document.getElementById('lbtn').disabled = false;
+      document.getElementById('lerr').textContent = '⚠️ Délai dépassé — réessaie';
+    }
+  }, 12000);
+  showApp();
+}
+
+function skipLogin() {
+  userToken = null;
+  isGuest = true;
+  showApp();
+}
+
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+  if (isGuest) {
+    document.getElementById('gbn').style.display = 'block';
+    document.getElementById('Xbal').textContent = 'Invité';
+    document.getElementById('Xbal').className = 'av m';
+    document.getElementById('Xlid').textContent = 'Invité';
+  }
+  startWS();
+}
+
+function doLogout() {
+  localStorage.removeItem('cdt_token');
+  userToken = null; authDone = false; isGuest = false; wsReady = false;
+  if (ws) { try { ws.close(); } catch(e){} ws = null; }
+  if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+  // Reset UI
+  document.getElementById('lbtn').textContent = '⚡ Se connecter';
+  document.getElementById('lbtn').disabled = false;
+  document.getElementById('lerr').textContent = '';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('Xbal').textContent = '--';
+  document.getElementById('Xbal').className = 'av';
+}
+
+// ════════════════════════════════════
+//  WEBSOCKET
+// ════════════════════════════════════
+function startWS() {
+  if (ws) { try { ws.close(); } catch(e){} }
+  setConn(false, 'Connexion...');
+  ws = new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=' + APP_ID);
+
+  ws.onopen = function() {
+    wsReady = true;
+    setConn(true, 'En ligne');
+    if (userToken) {
+      // Autoriser avec token
+      wsSend({ authorize: userToken, req_id: reqN++ });
+    } else {
+      // Mode invité : juste les ticks
+      subAllTicks();
+      renderWatch();
+      fillOSyms();
+    }
+  };
+
+  ws.onclose = function(e) {
+    wsReady = false;
+    setConn(false, 'Déconnecté');
+    // Ne pas reconnecter si l'utilisateur a volontairement déconnecté (userToken=null ET pas invité)
+    // ou si loginScreen est visible
+    const loginVisible = document.getElementById('loginScreen').style.display !== 'none';
+    if (!loginVisible && (userToken || isGuest)) {
+      reconnectTimer = setTimeout(startWS, 4000);
+    }
+  };
+
+  ws.onerror = function() {
+    wsReady = false;
+    setConn(false, 'Erreur réseau');
+  };
+
+  ws.onmessage = function(e) {
+    try { handleMsg(JSON.parse(e.data)); } catch(err) {}
+  };
+}
+
+function wsSend(obj) {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify(obj));
+    return true;
+  }
+  return false;
+}
+
+function wsReq(obj) {
+  obj.req_id = reqN++;
+  return wsSend(obj);
+}
+
+function setConn(on, txt) {
+  document.getElementById('dot').className = 'dot' + (on ? ' on' : '');
+  document.getElementById('ctext').textContent = txt || (on ? 'En ligne' : 'Déconnecté');
+}
+
+// ════════════════════════════════════
+//  MESSAGES WS
+// ════════════════════════════════════
+function handleMsg(d) {
+  const t = d.msg_type;
+
+  if (d.error) {
+    if (t === 'authorize') {
+      const errCode = d.error.code || '';
+      const errMsg = d.error.message || 'Token invalide ou expiré';
+      // Seulement logout si token vraiment invalide (pas erreur réseau temporaire)
+      if (errCode === 'InvalidToken' || errCode === 'AuthorizationRequired' || errCode === 'InvalidAppID') {
+        document.getElementById('lerr').textContent = '⚠️ ' + errMsg;
+        document.getElementById('lbtn').textContent = '⚡ Se connecter';
+        document.getElementById('lbtn').disabled = false;
+        localStorage.removeItem('cdt_token');
+        userToken = null; authDone = false; isGuest = false; wsReady = false;
+        if (ws) { try { ws.close(); } catch(e){} ws = null; }
+        if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('mainApp').style.display = 'none';
+        document.getElementById('Xbal').textContent = '--';
+        document.getElementById('Xbal').className = 'av';
+        showToast('⚠️ Token invalide — ' + errMsg, true);
+      } else {
+        // Erreur temporaire : on réessaie l'auth sans déconnecter
+        showToast('⚠️ Erreur auth : ' + errMsg + ' — Nouvelle tentative...', true);
+        setTimeout(() => {
+          if (wsReady && userToken) wsSend({ authorize: userToken, req_id: reqN++ });
+        }, 3000);
+      }
+    } else {
+      showToast('⚠️ Erreur : ' + (d.error.message || d.error.code || 'Inconnue'), true);
+    }
+    return;
+  }
+
+  if (t === 'authorize') {
+    authDone = true;
+    const a = d.authorize;
+    acInfo = a;
+    document.getElementById('Xbal').textContent = parseFloat(a.balance).toFixed(2);
+    document.getElementById('Xcur').textContent = a.currency;
+    document.getElementById('Xlid').textContent = a.loginid;
+    document.getElementById('Xbal').className = 'av';
+    document.getElementById('gbn').style.display = 'none';
+    subAllTicks();
+    renderWatch();
+    fillOSyms();
+    wsReq({ portfolio: 1 });
+    wsReq({ balance: 1, subscribe: 1, account: 'current' });
+    showToast('✅ Connecté : ' + a.loginid);
+    return;
+  }
+
+  if (t === 'tick') {
+    const k = d.tick;
+    const prev = prices[k.symbol] ? Object.assign({}, prices[k.symbol]) : null;
+    prices[k.symbol] = { bid: k.bid, ask: k.ask, quote: k.quote, epoch: k.epoch };
+    updateCard(k.symbol, prev);
+    if (k.symbol === selSym) { updChrPrice(k.symbol); updOPrices(k.symbol); }
+    return;
+  }
+
+  if (t === 'candles') {
+    if (d.req_id && symCandleReqs[d.req_id]) {
+      const { sym, label } = symCandleReqs[d.req_id];
+      delete symCandleReqs[d.req_id];
+      if (!symTFCandles[sym]) symTFCandles[sym] = {};
+      symTFCandles[sym][label] = d.candles;
+      analysisPending--;
+      if (analysisPending <= 0) finishAnalysis();
+    } else {
+      candles = d.candles; drawChart();
+    }
+    return;
+  }
+
+  if (t === 'ohlc') {
+    const c = d.ohlc;
+    if (candles.length) {
+      const last = candles[candles.length - 1];
+      if (last.epoch === c.open_time) {
+        candles[candles.length - 1] = { epoch: c.open_time, open: c.open, high: c.high, low: c.low, close: c.close };
+      } else {
+        candles.push({ epoch: c.open_time, open: c.open, high: c.high, low: c.low, close: c.close });
+        if (candles.length > 60) candles.shift();
+      }
+      drawChart();
+    }
+    return;
+  }
+
+  if (t === 'buy') {
+    const c = d.buy;
+    showToast('✅ Ordre #' + c.contract_id + ' exécuté !');
+    contracts[c.contract_id] = { id: c.contract_id, symbol: c.shortcode, buy_price: c.buy_price, side: oSide };
+    renderPos();
+    wsReq({ balance: 1, account: 'current' });
+    return;
+  }
+
+  if (t === 'balance' && d.balance) {
+    document.getElementById('Xbal').textContent = parseFloat(d.balance.balance).toFixed(2);
+    return;
+  }
+
+  if (t === 'portfolio' && d.portfolio && d.portfolio.contracts) {
+    d.portfolio.contracts.forEach(c => contracts[c.contract_id] = c);
+    renderPos();
+    return;
+  }
+
+  if (t === 'sell') {
+    showToast('💰 Position fermée ! $' + (d.sell ? d.sell.sold_for : '--'));
+    if (d.sell) delete contracts[d.sell.contract_id];
+    renderPos();
+    wsReq({ balance: 1, account: 'current' });
+    return;
+  }
+}
+
+// ════════════════════════════════════
+//  WATCHLIST
+// ════════════════════════════════════
+function subAllTicks() {
+  ALL.forEach(s => wsSend({ ticks: s.sym, subscribe: 1 }));
+}
+
+function renderWatch() {
+  buildGrid('fg', FOREX);
+  buildGrid('sg', SYNTH);
+}
+
+function buildGrid(id, syms) {
+  const g = document.getElementById(id);
+  g.innerHTML = '';
+  syms.forEach((s, i) => {
+    const d = document.createElement('div');
+    d.className = 'sc' + (selSym === s.sym ? ' sel' : '');
+    d.id = 'sc-' + s.sym;
+    d.style.animationDelay = (i * 0.04) + 's';
+    const p = prices[s.sym];
+    d.innerHTML = '<div><div class="sn">' + s.name + '</div><div class="stp">' + s.type + '</div></div>'
+      + '<div style="text-align:right"><div class="sp" id="sp-' + s.sym + '">' + (p ? fp(s.sym, p.quote) : '...') + '</div>'
+      + '<div class="sch" id="sc2-' + s.sym + '">' + (p && p.bid ? 'B:' + fp(s.sym, p.bid) + ' A:' + fp(s.sym, p.ask) : '') + '</div></div>';
+    d.onclick = function() { pickSym(s.sym, s.name); };
+    g.appendChild(d);
+  });
+}
+
+function updateCard(sym, prev) {
+  const el = document.getElementById('sp-' + sym);
+  const ce = document.getElementById('sc2-' + sym);
+  if (!el) return;
+  const p = prices[sym];
+  const dir = prev && p.quote !== prev.quote ? (p.quote > prev.quote ? 'up' : 'dn') : '';
+  el.textContent = fp(sym, p.quote);
+  el.className = 'sp' + (dir ? ' ' + dir : '');
+  if (ce && p.bid) {
+    ce.textContent = 'B:' + fp(sym, p.bid) + ' A:' + fp(sym, p.ask);
+    ce.className = 'sch' + (dir ? ' ' + dir : '');
+  }
+}
+
+function fp(sym, v) {
+  if (!v && v !== 0) return '--';
+  const n = parseFloat(v);
+  if (sym.includes('JPY') || sym === 'stpRNG') return n.toFixed(3);
+  if (sym.startsWith('R_')) return n.toFixed(2);
+  return n.toFixed(5);
+}
+
+function pickSym(sym, name) {
+  selSym = sym;
+  document.querySelectorAll('.sc').forEach(c => c.classList.remove('sel'));
+  const c = document.getElementById('sc-' + sym);
+  if (c) c.classList.add('sel');
+  document.getElementById('Xcsym').textContent = name || sym;
+  updChrPrice(sym);
+  loadCandles(sym, curTF);
+  document.getElementById('osym').value = sym;
+  updOPrices(sym);
+  sw(1, 'chart');
+}
+
+// ════════════════════════════════════
+//  CHART
+// ════════════════════════════════════
+function updChrPrice(sym) {
+  const p = prices[sym]; if (!p) return;
+  document.getElementById('Xcpr').textContent = fp(sym, p.quote);
+  document.getElementById('Xcba').textContent = 'Bid:' + fp(sym, p.bid) + '  |  Ask:' + fp(sym, p.ask);
+}
+
+function chTF(btn, tf) {
+  curTF = tf;
+  document.querySelectorAll('.tfb').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (selSym) loadCandles(selSym, tf);
+}
+
+function loadCandles(sym, tf) {
+  candles = [];
+  wsReq({ ticks_history: sym, adjust_start_time: 1, count: 50, end: 'latest', granularity: parseInt(tf), style: 'candles', subscribe: 1 });
+}
+
+function drawChart() {
+  const cv = document.getElementById('cv');
+  const ctx = cv.getContext('2d');
+  const W = cv.offsetWidth, H = cv.offsetHeight;
+  cv.width = W; cv.height = H;
+  ctx.fillStyle = '#0d1318'; ctx.fillRect(0, 0, W, H);
+
+  if (!candles || candles.length < 2) {
+    ctx.fillStyle = '#7a9bb0'; ctx.font = '11px Space Mono';
+    ctx.textAlign = 'center'; ctx.fillText('Sélectionne un symbole...', W / 2, H / 2);
+    return;
+  }
+
+  const pad = { t: 10, b: 26, l: 4, r: 60 };
+  const cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
+  const hi = candles.map(c => parseFloat(c.high)), lo = candles.map(c => parseFloat(c.low));
+  const mx = Math.max(...hi), mn = Math.min(...lo), rng = mx - mn || 1;
+  const yy = v => pad.t + ch * (1 - (v - mn) / rng);
+
+  // Grille
+  ctx.strokeStyle = '#1e2d3a'; ctx.lineWidth = 0.5;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + ch * i / 4;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+    const val = mx - rng * i / 4;
+    ctx.fillStyle = '#4a6a80'; ctx.font = '8px Space Mono'; ctx.textAlign = 'left';
+    ctx.fillText(val.toFixed(val > 100 ? 2 : 5), W - pad.r + 3, y + 3);
+  }
+
+  // Bougies
+  const n = candles.length, bw = Math.max(2, cw / n - 1);
+  candles.forEach((c, i) => {
+    const x = pad.l + (i + 0.5) * cw / n;
+    const op = parseFloat(c.open), cl = parseFloat(c.close);
+    const hi2 = parseFloat(c.high), lo2 = parseFloat(c.low);
+    const bull = cl >= op;
+    const col = bull ? '#00e676' : '#ff3d57';
+    ctx.strokeStyle = col; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, yy(hi2)); ctx.lineTo(x, yy(lo2)); ctx.stroke();
+    const y1 = yy(Math.max(op, cl)), y2 = yy(Math.min(op, cl)), bh = Math.max(1, y2 - y1);
+    ctx.fillStyle = col; ctx.fillRect(x - bw / 2, y1, bw, bh);
+  });
+
+  // Ligne prix actuel
+  const lc = parseFloat(candles[candles.length - 1].close), ly = yy(lc);
+  ctx.strokeStyle = '#00f5c4'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(pad.l, ly); ctx.lineTo(W - pad.r, ly); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#00f5c4'; ctx.font = 'bold 8px Space Mono'; ctx.textAlign = 'left';
+  ctx.fillText(lc.toFixed(lc > 100 ? 2 : 5), W - pad.r + 3, ly + 3);
+}
+
+// ════════════════════════════════════
+//  MOTEUR ICT/SMC — MULTI-TIMEFRAME
+//  Pipeline : H4 (biais) → H1 (zone)
+//           → M15 (entrée)
+// ════════════════════════════════════
+
+// Stockage candles par symbole ET timeframe
+// symTFCandles[sym][tf] = [candles...]
+let symTFCandles  = {};
+let symCandleReqs = {}; // req_id → { sym, tf }
+let analysisPending = 0;
+const TFS = [
+  { tf: 14400, label: 'H4',  count: 50 },
+  { tf: 3600,  label: 'H1',  count: 60 },
+  { tf: 900,   label: 'M15', count: 80 },
+];
+
+// ── Primitives structure ───────────────────────────────────
+function getSwings(cs, lb) {
+  lb = lb || 3;
+  const highs = [], lows = [];
+  for (let i = lb; i < cs.length - lb; i++) {
+    const hi = parseFloat(cs[i].high), lo = parseFloat(cs[i].low);
+    let isH = true, isL = true;
+    for (let j = i - lb; j <= i + lb; j++) {
+      if (j === i) continue;
+      if (parseFloat(cs[j].high) >= hi) isH = false;
+      if (parseFloat(cs[j].low)  <= lo) isL = false;
+    }
+    if (isH) highs.push({ i, price: hi });
+    if (isL) lows.push({  i, price: lo });
+  }
+  return { highs, lows };
+}
+
+function getTrend(cs, swings) {
+  // Direction structurelle : HH+HL = bull, LH+LL = bear
+  if (!swings.highs.length || !swings.lows.length) {
+    // Fallback sur close
+    const first = parseFloat(cs[0].close), last = parseFloat(cs[cs.length-1].close);
+    return last > first ? 'bull' : 'bear';
+  }
+  let bullScore = 0, bearScore = 0;
+  const rH = swings.highs.slice(-3), rL = swings.lows.slice(-3);
+  for (let i = 1; i < rH.length; i++) { rH[i].price > rH[i-1].price ? bullScore++ : bearScore++; }
+  for (let i = 1; i < rL.length; i++) { rL[i].price > rL[i-1].price ? bullScore++ : bearScore++; }
+  return bullScore >= bearScore ? 'bull' : 'bear';
+}
+
+function detectBOS(cs, swings) {
+  if (cs.length < 3 || !swings.highs.length || !swings.lows.length) return null;
+  const lc = parseFloat(cs[cs.length-1].close);
+  const pc = parseFloat(cs[cs.length-2].close);
+  const lH = swings.highs[swings.highs.length-1].price;
+  const lL = swings.lows[swings.lows.length-1].price;
+  if (lc > lH && pc <= lH) return { dir: 'bull', level: lH };
+  if (lc < lL && pc >= lL) return { dir: 'bear', level: lL };
+  return null;
+}
+
+function detectCHoCH(cs, swings, trend) {
+  // CHoCH = rupture de structure CONTRE la tendance courante
+  if (cs.length < 10) return null;
+  const lc = parseFloat(cs[cs.length-1].close);
+  if (trend === 'bear' && swings.highs.length >= 2) {
+    const lvl = swings.highs[swings.highs.length-2].price;
+    if (lc > lvl) return { dir: 'bull', level: lvl };
+  }
+  if (trend === 'bull' && swings.lows.length >= 2) {
+    const lvl = swings.lows[swings.lows.length-2].price;
+    if (lc < lvl) return { dir: 'bear', level: lvl };
+  }
+  return null;
+}
+
+function detectFVG(cs) {
+  const fvgs = [];
+  for (let i = 2; i < cs.length; i++) {
+    const hi0 = parseFloat(cs[i-2].high), lo0 = parseFloat(cs[i-2].low);
+    const hi2 = parseFloat(cs[i].high),   lo2 = parseFloat(cs[i].low);
+    if (lo2 > hi0) fvgs.push({ dir: 'bull', top: lo2, bot: hi0 });
+    if (hi2 < lo0) fvgs.push({ dir: 'bear', top: lo0, bot: hi2 });
+  }
+  return fvgs.slice(-5); // 5 derniers FVGs
+}
+
+function detectOB(cs, dir) {
+  // Dernier OB : bougie opposée juste avant le mouvement impulsif
+  for (let i = cs.length - 2; i >= Math.max(0, cs.length - 20); i--) {
+    const op = parseFloat(cs[i].open), cl = parseFloat(cs[i].close);
+    const body = Math.abs(cl - op);
+    if (body === 0) continue;
+    if (dir === 'bull' && cl < op) return { dir: 'bull', top: op, bot: cl, mid: (op+cl)/2 };
+    if (dir === 'bear' && cl > op) return { dir: 'bear', top: cl, bot: op, mid: (op+cl)/2 };
+  }
+  return null;
+}
+
+function detectSweep(cs, swings) {
+  if (cs.length < 2) return null;
+  const last = cs[cs.length-1];
+  const hi = parseFloat(last.high), lo = parseFloat(last.low), cl = parseFloat(last.close);
+  if (swings.highs.length) {
+    const lvl = swings.highs[swings.highs.length-1].price;
+    if (hi > lvl && cl < lvl) return { dir: 'bear', label: 'BSL Sweep ↓', level: lvl };
+  }
+  if (swings.lows.length) {
+    const lvl = swings.lows[swings.lows.length-1].price;
+    if (lo < lvl && cl > lvl) return { dir: 'bull', label: 'SSL Sweep ↑', level: lvl };
+  }
+  return null;
+}
+
+function calcOTE(lo, hi, dir) {
+  const r = hi - lo;
+  return dir === 'bull'
+    ? { top: hi - r * 0.62, bot: hi - r * 0.79 }
+    : { top: lo + r * 0.79, bot: lo + r * 0.62 };
+}
+
+function priceInZone(price, zone) {
+  return price >= zone.bot && price <= zone.top;
+}
+
+function getKillzone() {
+  const h = new Date().getUTCHours();
+  if (h >= 7  && h < 10) return 'London Open ⏰';
+  if (h >= 12 && h < 15) return 'NY Open ⏰';
+  if (h >= 2  && h < 5)  return 'Asia Session';
+  return null;
+}
+
+function dp(sym) {
+  if (sym.includes('JPY')) return 3;
+  if (sym.startsWith('R_')) return 2;
+  if (sym === 'stpRNG') return 3;
+  return 5;
+}
+
+// ── Analyse H4 : biais macro ──────────────────────────────
+function analyzeH4(cs) {
+  if (!cs || cs.length < 10) return null;
+  const sw   = getSwings(cs, 4);
+  const trend = getTrend(cs, sw);
+  const bos   = detectBOS(cs, sw);
+  const fvgs  = detectFVG(cs);
+  const sweep = detectSweep(cs, sw);
+  const lastH = sw.highs.length ? sw.highs[sw.highs.length-1].price : null;
+  const lastL = sw.lows.length  ? sw.lows[sw.lows.length-1].price   : null;
+  return { trend, bos, fvgs, sweep, lastH, lastL, swings: sw };
+}
+
+// ── Analyse H1 : confirmation de zone ────────────────────
+function analyzeH1(cs, h4Bias) {
+  if (!cs || cs.length < 10) return null;
+  const sw    = getSwings(cs, 3);
+  const trend = getTrend(cs, sw);
+  const bos   = detectBOS(cs, sw);
+  const choch = detectCHoCH(cs, sw, trend);
+  const fvgs  = detectFVG(cs);
+  const ob    = detectOB(cs, h4Bias === 'bull' ? 'bull' : 'bear');
+  const sweep = detectSweep(cs, sw);
+  // Alignement avec H4
+  const aligned = trend === h4Bias;
+  return { trend, bos, choch, fvgs, ob, sweep, aligned, swings: sw };
+}
+
+// ── Analyse M15 : entrée précise ──────────────────────────
+function analyzeM15(cs, h4Bias) {
+  if (!cs || cs.length < 15) return null;
+  const sw    = getSwings(cs, 2);
+  const trend = getTrend(cs, sw);
+  const bos   = detectBOS(cs, sw);
+  const choch = detectCHoCH(cs, sw, trend);
+  const fvgs  = detectFVG(cs);
+  const ob    = detectOB(cs, h4Bias === 'bull' ? 'bull' : 'bear');
+  const sweep = detectSweep(cs, sw);
+  const lastH = sw.highs.length ? sw.highs[sw.highs.length-1].price : null;
+  const lastL = sw.lows.length  ? sw.lows[sw.lows.length-1].price   : null;
+  let ote = null;
+  if (lastH && lastL) ote = calcOTE(lastL, lastH, h4Bias === 'bull' ? 'bull' : 'bear');
+  return { trend, bos, choch, fvgs, ob, sweep, ote, lastH, lastL, swings: sw };
+}
+
+// ── Synthèse finale H4→H1→M15 ────────────────────────────
+function analyzeSym(s) {
+  const csH4  = symTFCandles[s.sym] && symTFCandles[s.sym]['H4'];
+  const csH1  = symTFCandles[s.sym] && symTFCandles[s.sym]['H1'];
+  const csM15 = symTFCandles[s.sym] && symTFCandles[s.sym]['M15'];
+  if (!csH4 || !csH1 || !csM15) return null;
+
+  const p = prices[s.sym];
+  if (!p || !p.quote) return null;
+  const price = parseFloat(p.quote);
+  const d = dp(s.sym);
+
+  const h4 = analyzeH4(csH4);
+  if (!h4) return null;
+
+  const h1  = analyzeH1(csH1,  h4.trend);
+  const m15 = analyzeM15(csM15, h4.trend);
+  if (!h1 || !m15) return null;
+
+  // ══ RÈGLE 1 : H4 donne le biais, pas de trade contre ══
+  const bias = h4.trend; // 'bull' | 'bear'
+  const side = bias === 'bull' ? 'buy' : 'sell';
+
+  // ══ RÈGLE 2 : Score de confluence ══
+  let score = 0;
+  const confs = [];
+
+  // H4 — structure
+  if (h4.bos && h4.bos.dir === bias) { score += 3; confs.push('H4 BOS ' + (bias==='bull'?'▲':'▼')); }
+  if (h4.sweep && h4.sweep.dir === bias) { score += 2; confs.push('H4 ' + h4.sweep.label); }
+  const h4FVGaligned = h4.fvgs.filter(f => f.dir === bias);
+  if (h4FVGaligned.length) { score += 1; confs.push('H4 FVG ' + (bias==='bull'?'haussier':'baissier')); }
+
+  // H1 — confirmation
+  if (h1.aligned) { score += 2; confs.push('H1 aligné ' + (bias==='bull'?'▲':'▼')); }
+  if (h1.bos && h1.bos.dir === bias) { score += 2; confs.push('H1 BOS ' + (bias==='bull'?'▲':'▼')); }
+  if (h1.choch && h1.choch.dir === bias) { score += 2; confs.push('H1 CHoCH ' + (bias==='bull'?'▲':'▼')); }
+  if (h1.ob) { score += 2; confs.push('H1 Order Block'); }
+  if (h1.sweep && h1.sweep.dir === bias) { score += 2; confs.push('H1 ' + h1.sweep.label); }
+  const h1FVGaligned = h1.fvgs.filter(f => f.dir === bias);
+  if (h1FVGaligned.length) { score += 1; confs.push('H1 FVG'); }
+
+  // M15 — entrée
+  if (m15.bos && m15.bos.dir === bias) { score += 2; confs.push('M15 BOS ✓'); }
+  if (m15.choch && m15.choch.dir === bias) { score += 3; confs.push('M15 CHoCH ✓'); }
+  if (m15.ob) { score += 2; confs.push('M15 Order Block'); }
+  if (m15.sweep && m15.sweep.dir === bias) { score += 3; confs.push('M15 ' + m15.sweep.label); }
+  const m15FVG = m15.fvgs.filter(f => f.dir === bias);
+  if (m15FVG.length) { score += 1; confs.push('M15 FVG'); }
+
+  // OTE M15
+  if (m15.ote && priceInZone(price, m15.ote)) {
+    score += 3; confs.push('OTE 62–79% M15 ✓');
+  }
+
+  // Kill zone
+  const kz = getKillzone();
+  if (kz) { score += 1; confs.push(kz); }
+
+  // ══ RÈGLE 3 : Seuil minimum — signal seulement si 3+ confluences ══
+  if (confs.length < 3 || score < 8) return null;
+
+  // ══ RÈGLE 4 : Stop Loss sur structure M15 ══
+  let slPrice;
+  if (m15.ob) {
+    slPrice = side === 'buy'
+      ? m15.ob.bot * 0.9995
+      : m15.ob.top * 1.0005;
+  } else if (m15.lastH && m15.lastL) {
+    const buf = (m15.lastH - m15.lastL) * 0.05;
+    slPrice = side === 'buy' ? m15.lastL - buf : m15.lastH + buf;
+  } else return null;
+
+  const slDist = Math.abs(price - slPrice);
+  if (slDist <= 0) return null;
+
+  const maxScore = 30;
+  const strength = Math.min(100, Math.round(score / maxScore * 100));
+  const q = Math.min(10, Math.floor(score / 3));
+  const grade = q >= 9 ? 'A+' : q >= 7 ? 'A' : q >= 5 ? 'B+' : 'B';
+  const dm = side === 'buy' ? 1 : -1;
+
+  return {
+    sym: s.sym, name: s.name, type: s.type, side, price,
+    sl:  +(price - dm * slDist).toFixed(d),
+    tp1: +(price + dm * slDist * 1.5).toFixed(d),
+    tp2: +(price + dm * slDist * 2.5).toFixed(d),
+    tp3: +(price + dm * slDist * 4.0).toFixed(d),
+    rr: '1:2.5', confs, q, grade, strength,
+    bias: 'H4 ' + (bias === 'bull' ? '▲ Haussier' : '▼ Baissier'),
+    time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+  };
+}
+
+// ── Déclencheur : fetch H4 + H1 + M15 pour chaque symbole ─
+function genSig() {
+  const btn = document.getElementById('rbtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ H4 → H1 → M15...';
+  document.getElementById('sgl').innerHTML =
+    '<div class="ld"><div class="spin"></div>Chargement H4 · H1 · M15 depuis Deriv...</div>';
+
+  symTFCandles  = {};
+  symCandleReqs = {};
+  analysisPending = ALL.length * TFS.length; // 13 syms × 3 TFs = 39 requêtes
+
+  ALL.forEach(s => {
+    symTFCandles[s.sym] = {};
+    TFS.forEach(tf => {
+      const rid = reqN++;
+      symCandleReqs[rid] = { sym: s.sym, label: tf.label };
+      wsSend({
+        ticks_history: s.sym, adjust_start_time: 1,
+        count: tf.count, end: 'latest',
+        granularity: tf.tf, style: 'candles', req_id: rid
+      });
+    });
+  });
+
+  setTimeout(() => {
+    if (analysisPending > 0) { analysisPending = 0; finishAnalysis(); }
+  }, 18000);
+}
+
+function finishAnalysis() {
+  allSigs = ALL.map(s => analyzeSym(s)).filter(Boolean).sort((a, b) => b.q - a.q);
+  const ap = allSigs.filter(s => s.grade === 'A+').length;
+  document.getElementById('sgi').textContent =
+    allSigs.length + ' signaux · ' + ap + ' A+ · ' + new Date().toLocaleTimeString('fr-FR');
+  renderSigs();
+  const btn = document.getElementById('rbtn');
+  btn.disabled = false;
+  btn.textContent = '🔄 Réanalyser (H4→H1→M15)';
+}
+
+function fSig(f, btn) {
+  sigFilter = f;
+  document.querySelectorAll('.sfb').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderSigs();
+}
+
+function renderSigs() {
+  let list = allSigs;
+  if (sigFilter === 'buy') list = list.filter(s => s.side === 'buy');
+  else if (sigFilter === 'sell') list = list.filter(s => s.side === 'sell');
+  else if (sigFilter === 'forex') list = list.filter(s => s.type === 'Forex');
+  else if (sigFilter === 'synth') list = list.filter(s => s.type === 'Synthetic');
+  else if (sigFilter === 'aplus') list = list.filter(s => s.grade === 'A+' || s.grade === 'A');
+  const el = document.getElementById('sgl');
+  if (!list.length) { el.innerHTML = '<div class="emp">Aucun signal pour ce filtre</div>'; return; }
+  el.innerHTML = list.map((s, i) => {
+    const sc = s.q >= 8 ? 'var(--green)' : s.q >= 5 ? 'var(--gold)' : 'var(--red)';
+    const gc = s.grade === 'A+' ? 'var(--green)' : s.grade === 'A' ? 'var(--accent)' : 'var(--gold)';
+    const biasColor = s.bias && s.bias.includes('▲') ? 'var(--green)' : 'var(--red)';
+    return '<div class="sigc ' + s.side + '" style="animation-delay:' + (i * 0.06) + 's">'
+      + '<div class="sigh"><div><span class="sigsym">' + s.name + '</span>'
+      + '<span style="font-family:var(--mono);font-size:10px;color:' + gc + ';font-weight:700;margin-left:6px">' + s.grade + '</span></div>'
+      + '<span class="sigbadge ' + s.side + '">' + s.side.toUpperCase() + '</span></div>'
+      + (s.bias ? '<div style="font-family:var(--mono);font-size:10px;color:' + biasColor + ';margin-bottom:6px;font-weight:700">Biais ' + s.bias + '</div>' : '')
+      + '<div class="sigr"><span>Entrée</span><span class="v">' + fp(s.sym, s.price) + '</span></div>'
+      + '<div class="sigr"><span>Stop Loss</span><span class="vr">' + fp(s.sym, s.sl) + '</span></div>'
+      + '<div class="sigr"><span>TP1 (1.5R)</span><span class="vg">' + fp(s.sym, s.tp1) + '</span></div>'
+      + '<div class="sigr"><span>TP2 (2.5R)</span><span class="vg">' + fp(s.sym, s.tp2) + '</span></div>'
+      + '<div class="sigr"><span>TP3 (4R)</span><span class="vg">' + fp(s.sym, s.tp3) + '</span></div>'
+      + '<div class="sigr"><span>Ratio R:R</span><span class="vc">' + s.rr + '</span></div>'
+      + '<div class="sigsc"><div class="sbar"><div class="sfill" style="width:' + (s.q * 10) + '%;background:' + sc + '"></div></div>'
+      + '<span class="snum" style="color:' + sc + '">' + s.q + '/10</span></div>'
+      + '<div class="ctags">' + s.confs.map(c => '<span class="ctag">' + c + '</span>').join('') + '</div>'
+      + '<div class="sigft"><span class="sigt">⏱ ' + s.time + ' · Force ' + s.strength + '%</span>'
+      + '<button class="tdbtn ' + s.side + '" onclick="loadSig(\'' + s.sym + '\',\'' + s.side + '\')">⚡ Trader</button></div>'
+      + '</div>';
+  }).join('');
+}
+
+function loadSig(sym, side) {
+  document.getElementById('osym').value = sym;
+  setSide(side); updOPrices(sym);
+  sw(3, 'order');
+  showToast('Signal ' + side.toUpperCase() + ' chargé');
+}
+
+// ════════════════════════════════════
+//  ORDRE
+// ════════════════════════════════════
+function fillOSyms() {
+  const s = document.getElementById('osym');
+  s.innerHTML = '<option value="">-- Sélectionner --</option>';
+  ALL.forEach(x => {
+    const o = document.createElement('option');
+    o.value = x.sym; o.textContent = x.name + ' (' + x.type + ')';
+    s.appendChild(o);
+  });
+  s.onchange = function() { selSym = s.value; updOPrices(s.value); };
+}
+
+function updOPrices(sym) {
+  const p = prices[sym]; if (!p) return;
+  document.getElementById('Xoask').textContent = ' ' + fp(sym, p.ask);
+  document.getElementById('Xobid').textContent = ' ' + fp(sym, p.bid);
+  const sp = p.ask && p.bid ? ((p.ask - p.bid) * (sym.includes('JPY') ? 100 : 10000)).toFixed(1) : '--';
+  document.getElementById('Xosp').textContent = ' ' + sp + (sp !== '--' ? ' pips' : '');
+}
+
+function setSide(side) {
+  oSide = side;
+  document.getElementById('bBuy').className = 'stogb buy' + (side === 'buy' ? ' active' : '');
+  document.getElementById('bSell').className = 'stogb sell' + (side === 'sell' ? ' active' : '');
+  const b = document.getElementById('exbtn');
+  b.className = 'exbtn ' + side;
+  b.textContent = '⚡ Exécuter ' + side.toUpperCase();
+}
+
+function execOrd() {
+  if (!authDone) { showToast('Connecte-toi avec ton token API', true); doLogout(); return; }
+  const sym = document.getElementById('osym').value;
+  const amt = parseFloat(document.getElementById('oamt').value);
+  const dur = parseInt(document.getElementById('odur').value);
+  if (!sym) { showToast('Sélectionne un symbole', true); return; }
+  if (!amt || amt < 1) { showToast('Montant invalide', true); return; }
+  wsReq({ buy: 1, price: amt, parameters: {
+    amount: amt, basis: 'stake',
+    contract_type: oSide === 'buy' ? 'CALL' : 'PUT',
+    currency: acInfo.currency || 'USD',
+    duration: dur, duration_unit: 'm', symbol: sym
+  }});
+}
+
+// ════════════════════════════════════
+//  POSITIONS
+// ════════════════════════════════════
+function renderPos() {
+  const l = document.getElementById('posL');
+  const cs = Object.values(contracts);
+  if (!cs.length) { l.innerHTML = '<div class="emp">Aucune position ouverte</div>'; return; }
+  l.innerHTML = cs.map(c => {
+    const pnl = c.profit != null ? parseFloat(c.profit) : null;
+    const pc = pnl === null ? '' : (pnl >= 0 ? 'p' : 'l');
+    const pt = pnl !== null ? (pnl >= 0 ? '+' : '') + pnl.toFixed(2) : '--';
+    return '<div class="posc">'
+      + '<div class="posh"><span class="possym">' + (c.display_name || c.symbol || c.id) + '</span>'
+      + '<span class="possd ' + (c.side || 'buy') + '">' + (c.side || 'BUY').toUpperCase() + '</span></div>'
+      + '<div class="posdt"><span>$' + parseFloat(c.buy_price || 0).toFixed(2) + '</span><span>' + (c.current_spot || '--') + '</span></div>'
+      + '<div class="pospnl ' + pc + '">P&L: ' + pt + '</div>'
+      + '<button class="cbtn" onclick="closePos(' + c.contract_id + ')">✕ Fermer la position</button></div>';
+  }).join('');
+}
+
+function closePos(id) {
+  if (!authDone) { showToast('Connexion requise', true); return; }
+  wsReq({ sell: id, price: 0 });
+}
+
+// ════════════════════════════════════
+//  TABS
+// ════════════════════════════════════
+function sw(idx, name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.getElementById('t' + idx).classList.add('active');
+  if (name === 'chart') setTimeout(() => { if (candles.length) drawChart(); }, 60);
+}
+
+// ════════════════════════════════════
+//  TOAST
+// ════════════════════════════════════
+function showToast(msg, err) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (err ? ' err' : '');
+  setTimeout(() => t.className = 'toast', 3500);
+}
+
+// Redessine le chart toutes les 5s si actif
+setInterval(() => { if (selSym && candles.length) drawChart(); }, 5000);
+</script>
+</body>
+</html>
